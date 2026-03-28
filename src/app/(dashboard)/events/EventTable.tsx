@@ -10,6 +10,7 @@ import { Database } from "@/types/database"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { EventRowActions } from "./EventRowActions"
+import { SortableHead } from "../customers/SortableHead"
 
 // Hack the typing for joined customer name from Supabase nested select
 type DbCustomer = { full_name: string } | null;
@@ -53,7 +54,9 @@ export function EventTable({
             <TableHead>Cliente</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Convidados</TableHead>
-            <TableHead>Valor (R$)</TableHead>
+            <TableHead>
+              <SortableHead column="total_value" title="Valor (R$)" />
+            </TableHead>
             <TableHead className="w-[100px] text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>

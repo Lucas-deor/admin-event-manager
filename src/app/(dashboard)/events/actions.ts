@@ -3,17 +3,52 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function getEvents() {
+export async function getEvents({
+  search,
+  status,
+  fromDate,
+  toDate,
+  sort,
+  order
+}: {
+  search?: string
+  status?: string[]
+  fromDate?: string
+  toDate?: string
+  sort?: string
+  order?: string
+} = {}) {
   const supabase = await createClient()
   
   // Notice we need the customer name, so we join customers
-  const { data, error } = await supabase
+  // We use !inner so that filtering by joined table works properly
+  let query = supabase
     .from('events')
     .select(`
       *,
-      customers ( full_name )
+      customers!inner ( full_name )
     `)
-    .order('event_date', { ascending: true })
+
+  if (search) {
+    query = query.ilike('customers.full_name', `%${search}%`)
+  }
+
+  if (status && status.length > 0) {
+    query = query.in('status', status)
+  }
+
+  if (fromDate) {
+    query = query.gte('event_date', fromDate)
+  }
+
+  if (toDate) {
+    query = query.lte('event_date', toDate)
+  }
+
+  const orderBy = sort || 'event_date'
+  const isAscending = order ? order === 'asc' : true
+
+  const { data, error } = await query.order(orderBy, { ascending: isAscending })
 
   if (error) {
     console.error('Error fetching events:', error)
