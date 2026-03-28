@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dialog"
 import { EventForm } from './EventForm'
 import { deleteEvent } from './actions'
+import { PaymentManagerDialog } from './PaymentManagerDialog'
+import { DollarSign } from "lucide-react"
 
 type EventType = Database['public']['Tables']['events']['Row']
 type CustomerType = Database['public']['Tables']['customers']['Row']
@@ -33,6 +35,7 @@ export function EventRowActions({
   locks: LockType[]
 }) {
   const [open, setOpen] = useState(false)
+  const [paymentsOpen, setPaymentsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleDelete() {
@@ -59,7 +62,10 @@ export function EventRowActions({
           <span className="sr-only">Abrir menu</span>
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem onClick={() => setPaymentsOpen(true)}>
+            <DollarSign className="mr-2 h-4 w-4" /> Pagamentos
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
             <Edit className="mr-2 h-4 w-4" /> Editar
           </DropdownMenuItem>
@@ -82,6 +88,12 @@ export function EventRowActions({
           />
         </DialogContent>
       </Dialog>
+
+      <PaymentManagerDialog 
+        eventId={event.id}
+        open={paymentsOpen}
+        onOpenChange={setPaymentsOpen}
+      />
     </>
   )
 }
