@@ -9,6 +9,7 @@ import { createCalendarLock } from './actions'
 export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [startDate, setStartDate] = useState<string>('')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -39,6 +40,8 @@ export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
             id="start_date" 
             name="start_date" 
             type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
             required 
           />
         </div>
@@ -48,6 +51,7 @@ export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
             id="end_date" 
             name="end_date" 
             type="date"
+            min={startDate}
             required 
           />
         </div>

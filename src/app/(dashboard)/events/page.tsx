@@ -7,7 +7,7 @@ import { EventDialog } from './EventDialog'
 
 export default async function EventsPage() {
   const events = await getEvents()
-  const customers = await getCustomers()
+  const { customers } = await getCustomers()
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">

@@ -3,19 +3,38 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function getCustomers() {
+export async function getCustomers(options?: {
+  search?: string
+  page?: number
+  limit?: number
+  sort?: string
+  order?: string
+}) {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const { search = '', page = 1, limit, sort = 'created_at', order = 'desc' } = options || {}
+
+  let query = supabase.from('customers').select('*', { count: 'exact' })
+
+  if (search) {
+    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
+  }
+
+  query = query.order(sort, { ascending: order === 'asc' })
+
+  if (limit) {
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    query = query.range(from, to)
+  }
+
+  const { data, error, count } = await query
 
   if (error) {
     console.error('Error fetching customers:', error)
     throw new Error('Não foi possível carregar os clientes')
   }
 
-  return data
+  return { customers: data, count: count || 0 }
 }
 
 export async function createCustomer(formData: FormData) {
@@ -23,8 +42,8 @@ export async function createCustomer(formData: FormData) {
   
   const fullName = formData.get('full_name') as string
   const email = formData.get('email') as string
-  const phone = formData.get('phone') as string | null
-  const documentId = formData.get('document_id') as string | null
+  const phone = formData.get('phone') as string || null
+  const documentId = formData.get('document_id') as string || null
 
   if (!fullName || !email) {
     throw new Error('Nome e e-mail são obrigatórios')
@@ -55,8 +74,8 @@ export async function updateCustomer(id: string, formData: FormData) {
   
   const fullName = formData.get('full_name') as string
   const email = formData.get('email') as string
-  const phone = formData.get('phone') as string | null
-  const documentId = formData.get('document_id') as string | null
+  const phone = formData.get('phone') as string || null
+  const documentId = formData.get('document_id') as string || null
 
   if (!fullName || !email) {
     throw new Error('Nome e e-mail são obrigatórios')

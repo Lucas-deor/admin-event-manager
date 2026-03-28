@@ -56,8 +56,10 @@ export function EventForm({ event, customers, onSuccess }: EventFormProps) {
       <div className="space-y-2">
         <Label htmlFor="customer_id">Cliente *</Label>
         <Select name="customer_id" defaultValue={event?.customer_id} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione um cliente" />
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Selecione um cliente">
+              {(val: string | null) => val ? customers.find(c => c.id === val)?.full_name || val : "Selecione um cliente"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {customers.map(c => (
@@ -81,8 +83,18 @@ export function EventForm({ event, customers, onSuccess }: EventFormProps) {
         <div className="space-y-2">
           <Label htmlFor="status">Status *</Label>
           <Select name="status" defaultValue={event?.status || 'pending'} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Status">
+                {(val: string | null) => {
+                  const statusMap: Record<string, string> = {
+                    pending: 'Pendente',
+                    confirmed: 'Confirmado',
+                    finished: 'Concluído',
+                    cancelled: 'Cancelado'
+                  };
+                  return val ? statusMap[val] || val : "Status";
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="pending">Pendente</SelectItem>

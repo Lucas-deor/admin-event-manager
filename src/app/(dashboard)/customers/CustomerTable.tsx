@@ -10,6 +10,7 @@ import { Database } from "@/types/database"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { CustomerActions } from "./CustomerActions"
+import { SortableHead } from "./SortableHead"
 
 type Customer = Database['public']['Tables']['customers']['Row']
 
@@ -27,11 +28,11 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nome</TableHead>
+            <TableHead><SortableHead column="full_name" title="Nome" /></TableHead>
             <TableHead>E-mail</TableHead>
             <TableHead>Telefone</TableHead>
             <TableHead>CPF/CNPJ</TableHead>
-            <TableHead>Criado em</TableHead>
+            <TableHead><SortableHead column="created_at" title="Criado em" defaultSort /></TableHead>
             <TableHead className="w-[100px] text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>

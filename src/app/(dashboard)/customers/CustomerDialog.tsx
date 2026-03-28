@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import {
   Dialog,
@@ -17,10 +17,8 @@ export function CustomerDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> Novo Cliente
-        </Button>
+      <DialogTrigger className={buttonVariants()}>
+        <PlusCircle className="mr-2 h-4 w-4" /> Novo Cliente
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
