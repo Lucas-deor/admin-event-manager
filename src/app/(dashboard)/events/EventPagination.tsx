@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
-export function CustomerPagination({ 
+export function EventPagination({ 
   totalPages, 
   currentPage 
 }: { 

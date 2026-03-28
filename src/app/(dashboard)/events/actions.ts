@@ -9,7 +9,9 @@ export async function getEvents({
   fromDate,
   toDate,
   sort,
-  order
+  order,
+  page = 1,
+  limit = 10
 }: {
   search?: string
   status?: string[]
@@ -17,6 +19,8 @@ export async function getEvents({
   toDate?: string
   sort?: string
   order?: string
+  page?: number
+  limit?: number
 } = {}) {
   const supabase = await createClient()
   
@@ -27,7 +31,7 @@ export async function getEvents({
     .select(`
       *,
       customers!inner ( full_name )
-    `)
+    `, { count: 'exact' })
 
   if (search) {
     query = query.ilike('customers.full_name', `%${search}%`)
@@ -48,14 +52,22 @@ export async function getEvents({
   const orderBy = sort || 'event_date'
   const isAscending = order ? order === 'asc' : true
 
-  const { data, error } = await query.order(orderBy, { ascending: isAscending })
+  query = query.order(orderBy, { ascending: isAscending })
+
+  if (limit) {
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    query = query.range(from, to)
+  }
+
+  const { data, error, count } = await query
 
   if (error) {
     console.error('Error fetching events:', error)
     throw new Error('Não foi possível carregar os eventos')
   }
 
-  return data
+  return { events: data, count: count || 0 }
 }
 
 export async function createEvent(formData: FormData) {

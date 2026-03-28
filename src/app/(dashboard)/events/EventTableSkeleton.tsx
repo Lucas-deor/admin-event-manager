@@ -42,6 +42,14 @@ export function EventTableSkeleton() {
           </TableBody>
         </Table>
       </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <Skeleton className="h-4 w-[100px]" />
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-[100px] rounded-md" />
+          <Skeleton className="h-8 w-[100px] rounded-md" />
+        </div>
+      </div>
     </div>
   )
 }

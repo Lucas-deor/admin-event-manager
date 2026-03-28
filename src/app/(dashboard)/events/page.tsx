@@ -8,6 +8,7 @@ import { EventDialog } from './EventDialog'
 import { EventSearch } from './EventSearch'
 import { EventFilterModal } from './EventFilterModal'
 import { EventTableSkeleton } from './EventTableSkeleton'
+import { EventPagination } from './EventPagination'
 
 // Separate server component for fetching data and rendering the table
 async function EventList({
@@ -16,7 +17,8 @@ async function EventList({
   fromDate,
   toDate,
   sort,
-  order
+  order,
+  page
 }: {
   search?: string
   status?: string[]
@@ -24,11 +26,19 @@ async function EventList({
   toDate?: string
   sort?: string
   order?: string
+  page: number
 }) {
-  const events = await getEvents({ search, status, fromDate, toDate, sort, order })
+  const { events, count } = await getEvents({ search, status, fromDate, toDate, sort, order, page, limit: 10 })
   const { customers } = await getCustomers()
 
-  return <EventTable events={events} customers={customers} />
+  const totalPages = Math.ceil(count / 10)
+
+  return (
+    <>
+      <EventTable events={events} customers={customers} />
+      <EventPagination totalPages={totalPages} currentPage={page} />
+    </>
+  )
 }
 
 export default async function EventsPage({
@@ -43,6 +53,7 @@ export default async function EventsPage({
   const order = typeof params.order === 'string' ? params.order : undefined
   const fromDate = typeof params.from_date === 'string' ? params.from_date : undefined
   const toDate = typeof params.to_date === 'string' ? params.to_date : undefined
+  const page = Number(typeof params.page === 'string' ? params.page : '1') || 1
   
   // Status can be multiple
   let status: string[] | undefined;
@@ -55,7 +66,7 @@ export default async function EventsPage({
   const { customers } = await getCustomers()
 
   // Generate a key representing the current query state so Suspense retriggers
-  const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order].join('-')
+  const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order, page].join('-')
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
@@ -86,6 +97,7 @@ export default async function EventsPage({
           toDate={toDate}
           sort={sort}
           order={order}
+          page={page}
         />
       </Suspense>
     </div>
