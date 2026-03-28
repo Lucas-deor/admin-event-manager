@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, Home, Users, Settings, LogOut } from 'lucide-react'
+import { Calendar, CalendarOff, Home, Users, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/app/(dashboard)/dashboard/actions/auth'
@@ -11,6 +11,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Eventos', href: '/events', icon: Calendar },
   { name: 'Clientes', href: '/customers', icon: Users },
+  { name: 'Bloqueios', href: '/calendar', icon: CalendarOff },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ]
 

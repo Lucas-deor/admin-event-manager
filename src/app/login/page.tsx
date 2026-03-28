@@ -25,7 +25,7 @@ export default function LoginPage() {
         setToken('') // reset token clear
         setStep('otp')
       }
-    } catch (err) {
+    } catch {
       setError('Ocorreu um erro inesperado.')
     } finally {
       setLoading(false)
@@ -43,7 +43,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error)
       }
-    } catch (err) {
+    } catch {
       setError('Ocorreu um erro inesperado.')
     } finally {
       setLoading(false)
