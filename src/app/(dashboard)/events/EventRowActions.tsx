@@ -21,13 +21,16 @@ import { deleteEvent } from './actions'
 
 type EventType = Database['public']['Tables']['events']['Row']
 type CustomerType = Database['public']['Tables']['customers']['Row']
+type LockType = Database['public']['Tables']['calendar_locks']['Row']
 
 export function EventRowActions({ 
   event, 
-  customers 
+  customers,
+  locks
 }: { 
   event: EventType, 
-  customers: CustomerType[] 
+  customers: CustomerType[],
+  locks: LockType[]
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -74,6 +77,7 @@ export function EventRowActions({
           <EventForm 
             event={event} 
             customers={customers}
+            locks={locks}
             onSuccess={() => setOpen(false)} 
           />
         </DialogContent>

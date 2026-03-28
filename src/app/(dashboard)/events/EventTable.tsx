@@ -32,10 +32,12 @@ const statusMap: Record<string, string> = {
 
 export function EventTable({ 
   events, 
-  customers 
+  customers,
+  locks
 }: { 
   events: DbEvent[], 
-  customers: Database['public']['Tables']['customers']['Row'][] 
+  customers: Database['public']['Tables']['customers']['Row'][],
+  locks: Database['public']['Tables']['calendar_locks']['Row'][]
 }) {
   if (events.length === 0) {
     return (
@@ -73,7 +75,7 @@ export function EventTable({
                 {evt.total_value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </TableCell>
               <TableCell className="text-right">
-                 <EventRowActions event={evt} customers={customers} />
+                 <EventRowActions event={evt} customers={customers} locks={locks} />
               </TableCell>
             </TableRow>
           ))}

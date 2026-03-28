@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { Suspense } from 'react'
 import { getEvents } from './actions'
 import { getCustomers } from '../customers/actions'
+import { getCalendarLocks } from '../calendar/actions'
 import { EventTable } from './EventTable'
 import { EventDialog } from './EventDialog'
 import { EventSearch } from './EventSearch'
@@ -30,12 +31,13 @@ async function EventList({
 }) {
   const { events, count } = await getEvents({ search, status, fromDate, toDate, sort, order, page, limit: 10 })
   const { customers } = await getCustomers()
+  const locks = await getCalendarLocks()
 
   const totalPages = Math.ceil(count / 10)
 
   return (
     <>
-      <EventTable events={events} customers={customers} />
+      <EventTable events={events} customers={customers} locks={locks} />
       <EventPagination totalPages={totalPages} currentPage={page} />
     </>
   )
@@ -64,9 +66,10 @@ export default async function EventsPage({
   }
 
   const { customers } = await getCustomers()
+  const locks = await getCalendarLocks()
 
   // Generate a key representing the current query state so Suspense retriggers
-  const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order, page].join('-')
+  const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order].join('-')
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
@@ -77,7 +80,7 @@ export default async function EventsPage({
             Crie novos eventos e consulte a agenda.
           </p>
         </div>
-        <EventDialog customers={customers} />
+        <EventDialog customers={customers} locks={locks} />
       </div>
 
       <div className="flex items-center gap-4 border-b pb-4">

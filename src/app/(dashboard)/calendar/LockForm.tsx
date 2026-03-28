@@ -5,17 +5,34 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createCalendarLock } from './actions'
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [startDate, setStartDate] = useState<string>('')
+  const [startDate, setStartDate] = useState<Date | undefined>()
+  const [endDate, setEndDate] = useState<Date | undefined>()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     const formData = new FormData(e.currentTarget)
+
+    if (!startDate || !endDate) {
+      setError("As datas inicial e final são obrigatórias.")
+      setLoading(false)
+      return
+    }
 
     try {
       await createCalendarLock(formData)
@@ -34,25 +51,57 @@ export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        <div className="space-y-2 flex flex-col pt-1">
           <Label htmlFor="start_date">Data Inicial *</Label>
-          <Input 
-            id="start_date" 
+          <Popover>
+            <PopoverTrigger className={cn(
+                  "flex w-full items-center justify-start gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 h-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                  !startDate && "text-muted-foreground"
+                )}
+            >
+              {!startDate && <CalendarIcon className="mr-2 h-4 w-4" />}
+              {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <input 
+            type="hidden" 
             name="start_date" 
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            required 
+            value={startDate ? format(startDate, 'yyyy-MM-dd') : ''} 
           />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 flex flex-col pt-1">
           <Label htmlFor="end_date">Data Final *</Label>
-          <Input 
-            id="end_date" 
+          <Popover>
+            <PopoverTrigger className={cn(
+                  "flex w-full items-center justify-start gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 h-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                  !endDate && "text-muted-foreground"
+                )}
+            >
+              {!endDate && <CalendarIcon className="mr-2 h-4 w-4" />}
+              {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                disabled={(date) => date < (startDate || new Date(0))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <input 
+            type="hidden" 
             name="end_date" 
-            type="date"
-            min={startDate}
-            required 
+            value={endDate ? format(endDate, 'yyyy-MM-dd') : ''} 
           />
         </div>
       </div>
