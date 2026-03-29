@@ -11,8 +11,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { LockForm } from './LockForm'
+import { Database } from '@/types/database'
 
-export function LockDialog() {
+type CalendarLock = Database['public']['Tables']['calendar_locks']['Row']
+type ActiveEventType = { event_date: string, status: string }
+
+export function LockDialog({ 
+  locks = [], 
+  activeEvents = [] 
+}: { 
+  locks?: CalendarLock[], 
+  activeEvents?: ActiveEventType[] 
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -24,7 +34,7 @@ export function LockDialog() {
         <DialogHeader>
           <DialogTitle>Bloquear Período no Calendário</DialogTitle>
         </DialogHeader>
-        <LockForm onSuccess={() => setOpen(false)} />
+        <LockForm onSuccess={() => setOpen(false)} locks={locks} activeEvents={activeEvents} />
       </DialogContent>
     </Dialog>
   )

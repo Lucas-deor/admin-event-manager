@@ -9,18 +9,47 @@ import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
-export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
+export function LockForm({ 
+  onSuccess,
+  locks = [],
+  activeEvents = [] 
+}: { 
+  onSuccess?: () => void
+  locks?: any[]
+  activeEvents?: any[]
+}) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
+
+  const disabledDates = [
+    // Disabled locks
+    ...(locks || []).map(lock => {
+      const [startYear, startMonth, startDay] = lock.start_date.split('-').map(Number)
+      const [endYear, endMonth, endDay] = lock.end_date.split('-').map(Number)
+      
+      const start = new Date(startYear, startMonth - 1, startDay)
+      start.setHours(0, 0, 0, 0)
+      
+      const end = new Date(endYear, endMonth - 1, endDay)
+      end.setHours(23, 59, 59, 999)
+      
+      return { from: start, to: end }
+    }),
+    // Disabled active events
+    ...(activeEvents || []).map(event => {
+      const [year, month, day] = event.event_date.split('-').map(Number)
+      
+      const evtDate = new Date(year, month - 1, day)
+      evtDate.setHours(12, 0, 0, 0)
+      
+      return evtDate
+    })
+  ]
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -67,6 +96,7 @@ export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
                 mode="single"
                 selected={startDate}
                 onSelect={setStartDate}
+                disabled={disabledDates}
                 initialFocus
               />
             </PopoverContent>
@@ -93,7 +123,10 @@ export function LockForm({ onSuccess }: { onSuccess?: () => void }) {
                 mode="single"
                 selected={endDate}
                 onSelect={setEndDate}
-                disabled={(date) => date < (startDate || new Date(0))}
+                disabled={[
+                  (date) => date < (startDate || new Date(0)),
+                  ...disabledDates
+                ]}
                 initialFocus
               />
             </PopoverContent>

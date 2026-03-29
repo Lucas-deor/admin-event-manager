@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/table"
 import { Database } from '@/types/database'
 import { Edit2, Trash2, CalendarIcon } from 'lucide-react'
-import { getPayments, createPayment, updatePayment, deletePayment } from './payments/actions'
-import { format, parseISO, parse } from "date-fns"
+import { getPayments, createPayment, updatePayment, deletePayment, createPaymentBatch } from './payments/actions'
+import { format, parseISO, parse, addMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
@@ -63,6 +63,11 @@ export function PaymentManagerDialog({
   const [status, setStatus] = useState<PaymentStatus>('pending')
   const [paymentMethod, setPaymentMethod] = useState('')
 
+  const [isBatch, setIsBatch] = useState(false)
+  const [installmentCount, setInstallmentCount] = useState('2')
+  const [intervalAmount, setIntervalAmount] = useState('1')
+  const [intervalUnit, setIntervalUnit] = useState<'months' | 'days'>('months')
+
   useEffect(() => {
     if (open) {
       loadPayments()
@@ -88,6 +93,10 @@ export function PaymentManagerDialog({
     setDueDate(undefined)
     setStatus('pending')
     setPaymentMethod('')
+    setIsBatch(false)
+    setInstallmentCount('2')
+    setIntervalAmount('1')
+    setIntervalUnit('months')
   }
 
   function handleEditClick(payment: PaymentRow) {
@@ -120,18 +129,44 @@ export function PaymentManagerDialog({
     setFormLoading(true)
 
     try {
-      const payload = {
-        event_id: eventId,
-        installment_value: Number(installmentValue),
-        due_date: format(dueDate, 'yyyy-MM-dd'),
-        status: status,
-        payment_method: paymentMethod || null,
-      }
-
-      if (editingId) {
-        await updatePayment(editingId, payload)
+      if (isBatch && !editingId) {
+        const count = parseInt(installmentCount) || 1
+        const interval = parseInt(intervalAmount) || 1
+        
+        const payloads = []
+        let currentDueDate = dueDate
+        
+        for (let i = 0; i < count; i++) {
+          payloads.push({
+            event_id: eventId,
+            installment_value: Number(installmentValue),
+            due_date: format(currentDueDate, 'yyyy-MM-dd'),
+            status: status,
+            payment_method: paymentMethod || null,
+          })
+          
+          if (intervalUnit === 'months') {
+            currentDueDate = addMonths(currentDueDate, interval)
+          } else {
+            currentDueDate = addDays(currentDueDate, interval)
+          }
+        }
+        
+        await createPaymentBatch(payloads)
       } else {
-        await createPayment(payload)
+        const payload = {
+          event_id: eventId,
+          installment_value: Number(installmentValue),
+          due_date: format(dueDate, 'yyyy-MM-dd'),
+          status: status,
+          payment_method: paymentMethod || null,
+        }
+
+        if (editingId) {
+          await updatePayment(editingId, payload)
+        } else {
+          await createPayment(payload)
+        }
       }
       
       resetForm()
@@ -180,85 +215,165 @@ export function PaymentManagerDialog({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end mb-6">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="installmentValue">Valor (R$)</Label>
-            <Input
-              id="installmentValue"
-              type="number"
-              step="0.01"
-              required
-              value={installmentValue}
-              onChange={(e) => setInstallmentValue(e.target.value)}
-              placeholder="0.00"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="dueDate">Vencimento</Label>
-            <Popover>
-              <PopoverTrigger className={cn(
-                "flex w-full items-center justify-start gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 h-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-                !dueDate && "text-muted-foreground"
-              )}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dueDate}
-                  onSelect={setDueDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={status}
-              onValueChange={(val) => setStatus(val as PaymentStatus)}
+        {!editingId && (
+          <div className="flex gap-2 mb-4">
+            <Button 
+              type="button" 
+              variant={!isBatch ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setIsBatch(false)}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione...">
-                  {(val: string | null) => {
-                    const statusMap: Record<string, string> = {
-                      pending: 'Pendente',
-                      paid: 'Pago',
-                      overdue: 'Atrasado'
-                    };
-                    return val ? statusMap[val] || val : "Selecione...";
-                  }}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="paid">Pago</SelectItem>
-                <SelectItem value="overdue">Atrasado</SelectItem>
-              </SelectContent>
-            </Select>
+              Criar um por vez
+            </Button>
+            <Button 
+              type="button" 
+              variant={isBatch ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setIsBatch(true)}
+            >
+              Criar em lote
+            </Button>
           </div>
+        )}
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="paymentMethod">Método</Label>
-            <Input
-              id="paymentMethod"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              placeholder="Pix, Cartão..."
-            />
+        {isBatch && !editingId && (
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
+            <span className="text-sm font-medium">Previsão Total do Lote:</span>
+            <span className="text-lg font-bold text-primary">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                .format((Number(installmentValue) || 0) * (parseInt(installmentCount) || 0))}
+            </span>
           </div>
+        )}
 
-          <div className="flex gap-2 w-full sm:col-span-2 lg:col-span-1 h-8">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="installmentValue">Valor (R$)</Label>
+              <Input
+                id="installmentValue"
+                type="number"
+                step="0.01"
+                required
+                value={installmentValue}
+                onChange={(e) => setInstallmentValue(e.target.value)}
+                placeholder="0.00"
+                className="h-9"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dueDate">Vencimento Inicial</Label>
+              <Popover>
+                <PopoverTrigger className={cn(
+                  "flex w-full items-center justify-start gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 h-9 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                  !dueDate && "text-muted-foreground"
+                )}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={status}
+                onValueChange={(val) => setStatus(val as PaymentStatus)}
+              >
+                <SelectTrigger className="w-full h-9">
+                  <SelectValue placeholder="Selecione...">
+                    {(val: string | null) => {
+                      const statusMap: Record<string, string> = {
+                        pending: 'Pendente',
+                        paid: 'Pago',
+                        overdue: 'Atrasado'
+                      };
+                      return val ? statusMap[val] || val : "Selecione...";
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="paid">Pago</SelectItem>
+                  <SelectItem value="overdue">Atrasado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="paymentMethod">Método</Label>
+              <Input
+                id="paymentMethod"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                placeholder="Pix, Cartão..."
+                className="h-9"
+              />
+            </div>
+
+            {isBatch && !editingId && (
+              <>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="installmentCount">Qtd. Parcelas</Label>
+                  <Input
+                    id="installmentCount"
+                    type="number"
+                    min="2"
+                    max="120"
+                    required
+                    value={installmentCount}
+                    onChange={(e) => setInstallmentCount(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2 lg:col-span-1">
+                  <Label htmlFor="intervalAmount">Intervalo</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="intervalAmount"
+                      type="number"
+                      min="1"
+                      required
+                      value={intervalAmount}
+                      onChange={(e) => setIntervalAmount(e.target.value)}
+                      className="w-16 h-9"
+                    />
+                    <Select
+                      value={intervalUnit}
+                      onValueChange={(val) => setIntervalUnit(val as 'months' | 'days')}
+                    >
+                      <SelectTrigger className="flex-1 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="days">Dias</SelectItem>
+                        <SelectItem value="months">Meses</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          
+          <div className="flex justify-end gap-2 w-full mt-2">
             {editingId && (
-              <Button type="button" variant="outline" onClick={resetForm} disabled={formLoading} className="px-3 flex-1">
+              <Button type="button" variant="outline" onClick={resetForm} disabled={formLoading} className="px-6">
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={formLoading} className="flex-1">
-              {editingId ? 'Salvar' : 'Adicionar'}
+            <Button type="submit" disabled={formLoading} className="px-6">
+              {editingId ? 'Salvar' : (isBatch ? 'Criar Lote' : 'Adicionar')}
             </Button>
           </div>
         </form>

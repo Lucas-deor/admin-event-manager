@@ -28,15 +28,17 @@ import { cn } from "@/lib/utils"
 type EventType = Database['public']['Tables']['events']['Row']
 type CustomerType = Database['public']['Tables']['customers']['Row']
 type LockType = Database['public']['Tables']['calendar_locks']['Row']
+type ActiveEventType = { event_date: string, status: string }
 
 interface EventFormProps {
-  event?: EventType
+  event?: any
   customers: CustomerType[]
   locks: LockType[]
-  onSuccess?: () => void
+  activeEvents?: ActiveEventType[]
+  onSuccess: () => void
 }
 
-export function EventForm({ event, customers, locks, onSuccess }: EventFormProps) {
+export function EventForm({ event, customers, locks, activeEvents = [], onSuccess }: EventFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -46,10 +48,19 @@ export function EventForm({ event, customers, locks, onSuccess }: EventFormProps
   )
 
   // Map calendar_locks to the DateMatcher format used by react-day-picker
-  const disabledDates = locks.map(lock => ({
+  const lockDates = locks.map(lock => ({
     from: new Date(`${lock.start_date}T00:00:00`),
     to: new Date(`${lock.end_date}T23:59:59`)
   }))
+
+  const eventDates = activeEvents.map(evt => {
+    // block event specific dates
+    const date = new Date(`${evt.event_date}T12:00:00`)
+    return date
+  })
+
+  // Combine both sources of blocked dates
+  const disabledDates = [...lockDates, ...eventDates]
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

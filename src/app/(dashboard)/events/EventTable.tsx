@@ -69,7 +69,13 @@ export function EventTable({
                 {format(new Date(evt.event_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}
               </TableCell>
               <TableCell>{getCustomerName(evt.customers)}</TableCell>
-              <TableCell>{statusMap[evt.status] || evt.status}</TableCell>
+              <TableCell>
+                {evt.status === 'pending' && <span className="text-yellow-600 font-medium">Pendente</span>}
+                {evt.status === 'confirmed' && <span className="text-blue-600 font-medium">Confirmado</span>}
+                {evt.status === 'finished' && <span className="text-green-600 font-medium">Concluído</span>}
+                {evt.status === 'cancelled' && <span className="text-red-600 font-medium">Cancelado</span>}
+                {!['pending', 'confirmed', 'finished', 'cancelled'].includes(evt.status) && evt.status}
+              </TableCell>
               <TableCell>{evt.guest_count} pax</TableCell>
               <TableCell>
                 {evt.total_value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}

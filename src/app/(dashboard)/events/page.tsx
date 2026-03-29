@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { Suspense } from 'react'
-import { getEvents } from './actions'
+import { getEvents, getAllActiveEvents } from './actions'
 import { getCustomers } from '../customers/actions'
 import { getCalendarLocks } from '../calendar/actions'
 import { EventTable } from './EventTable'
@@ -67,29 +67,31 @@ export default async function EventsPage({
 
   const { customers } = await getCustomers()
   const locks = await getCalendarLocks()
+  const activeEvents = await getAllActiveEvents()
 
   // Generate a key representing the current query state so Suspense retriggers
   const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order].join('-')
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
-          <p className="text-muted-foreground">
-            Crie novos eventos e consulte a agenda.
-          </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b pb-4">
+        <div className="flex-1 space-y-4 w-full">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
+            <p className="text-muted-foreground">
+              Crie novos eventos e consulte a agenda.
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <EventSearch />
+            <EventFilterModal 
+              initialFromDate={fromDate}
+              initialToDate={toDate}
+              initialStatuses={status || []}
+            />
+          </div>
         </div>
-        <EventDialog customers={customers} locks={locks} />
-      </div>
-
-      <div className="flex items-center gap-4 border-b pb-4">
-        <EventSearch />
-        <EventFilterModal 
-          initialFromDate={fromDate}
-          initialToDate={toDate}
-          initialStatuses={status || []}
-        />
+        <EventDialog customers={customers} locks={locks} activeEvents={activeEvents} />
       </div>
 
       <Suspense key={suspenseKey} fallback={<EventTableSkeleton />}>

@@ -200,3 +200,9 @@ export async function deleteEvent(id: string) {
   revalidatePath('/events')
   return true
 }
+export async function getAllActiveEvents() {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('events').select('event_date, status').neq('status', 'cancelled')
+  if (error) throw new Error(error.message)
+  return data
+}

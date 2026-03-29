@@ -1,11 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import { getCalendarLocks } from './actions'
+import { getAllActiveEvents } from '../events/actions'
 import { LockTable } from './LockTable'
 import { LockDialog } from './LockDialog'
 
 export default async function CalendarPage() {
   const locks = await getCalendarLocks()
+  const activeEvents = await getAllActiveEvents()
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
@@ -16,7 +18,7 @@ export default async function CalendarPage() {
             Gerencie as datas bloqueadas para manutenção, férias ou imprevistos.
           </p>
         </div>
-        <LockDialog />
+        <LockDialog locks={locks} activeEvents={activeEvents} />
       </div>
 
       <LockTable locks={locks} />

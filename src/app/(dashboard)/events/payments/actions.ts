@@ -42,6 +42,30 @@ export async function createPayment(data: PaymentInsert) {
   revalidatePath('/(dashboard)/events', 'page')
 }
 
+export async function createPaymentBatch(dataArray: PaymentInsert[]) {
+  const supabase = await createClient()
+  
+  const today = new Date().toISOString().split('T')[0]
+  
+  const sanitizedData = dataArray.map(data => {
+    // Preventive check: if inserting as pending but date is past, change to overdue
+    if (data.status === 'pending' && data.due_date && data.due_date < today) {
+      return { ...data, status: 'overdue' as const }
+    }
+    return data
+  })
+
+  const { error } = await supabase
+    .from('payments')
+    .insert(sanitizedData)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/(dashboard)/events', 'page')
+}
+
 export async function updatePayment(id: string, data: PaymentUpdate) {
   const supabase = await createClient()
   

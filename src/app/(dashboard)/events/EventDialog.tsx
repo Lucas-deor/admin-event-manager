@@ -15,8 +15,17 @@ import { Database } from "@/types/database"
 
 type CustomerType = Database['public']['Tables']['customers']['Row']
 type LockType = Database['public']['Tables']['calendar_locks']['Row']
+type ActiveEventType = { event_date: string, status: string }
 
-export function EventDialog({ customers, locks }: { customers: CustomerType[], locks: LockType[] }) {
+export function EventDialog({ 
+  customers, 
+  locks,
+  activeEvents = []
+}: { 
+  customers: CustomerType[], 
+  locks: LockType[],
+  activeEvents?: ActiveEventType[]
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -28,7 +37,12 @@ export function EventDialog({ customers, locks }: { customers: CustomerType[], l
         <DialogHeader>
           <DialogTitle>Novo Evento</DialogTitle>
         </DialogHeader>
-        <EventForm customers={customers} locks={locks} onSuccess={() => setOpen(false)} />
+        <EventForm 
+          customers={customers} 
+          locks={locks} 
+          activeEvents={activeEvents}
+          onSuccess={() => setOpen(false)} 
+        />
       </DialogContent>
     </Dialog>
   )
