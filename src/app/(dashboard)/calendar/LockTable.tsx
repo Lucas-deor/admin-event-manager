@@ -37,10 +37,10 @@ export function LockTable({ locks }: { locks: CalendarLock[] }) {
           {locks.map((lock) => (
             <TableRow key={lock.id}>
               <TableCell className="font-medium">
-                {format(parseISO(lock.start_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}
+                {lock.start_date.substring(8, 10)}/{lock.start_date.substring(5, 7)}/{lock.start_date.substring(0, 4)}
               </TableCell>
               <TableCell className="font-medium">
-                {format(parseISO(lock.end_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}
+                {lock.end_date.substring(8, 10)}/{lock.end_date.substring(5, 7)}/{lock.end_date.substring(0, 4)}
               </TableCell>
               <TableCell>{lock.reason || '-'}</TableCell>
               <TableCell className="text-right">

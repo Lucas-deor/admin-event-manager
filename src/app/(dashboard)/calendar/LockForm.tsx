@@ -27,28 +27,22 @@ export function LockForm({
   const [endDate, setEndDate] = useState<Date | undefined>()
 
   const disabledDates = [
-    // Disabled locks
-    ...(locks || []).map(lock => {
-      const [startYear, startMonth, startDay] = lock.start_date.split('-').map(Number)
-      const [endYear, endMonth, endDay] = lock.end_date.split('-').map(Number)
+    (date: Date) => {
+      const checkStr = format(date, 'yyyy-MM-dd')
       
-      const start = new Date(startYear, startMonth - 1, startDay)
-      start.setHours(0, 0, 0, 0)
+      for (const lock of locks || []) {
+        const startStr = lock.start_date.substring(0, 10)
+        const endStr = lock.end_date.substring(0, 10)
+        if (checkStr >= startStr && checkStr <= endStr) return true
+      }
       
-      const end = new Date(endYear, endMonth - 1, endDay)
-      end.setHours(23, 59, 59, 999)
+      for (const evt of activeEvents || []) {
+        const evtStr = evt.event_date.substring(0, 10)
+        if (checkStr === evtStr) return true
+      }
       
-      return { from: start, to: end }
-    }),
-    // Disabled active events
-    ...(activeEvents || []).map(event => {
-      const [year, month, day] = event.event_date.split('-').map(Number)
-      
-      const evtDate = new Date(year, month - 1, day)
-      evtDate.setHours(12, 0, 0, 0)
-      
-      return evtDate
-    })
+      return false
+    }
   ]
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

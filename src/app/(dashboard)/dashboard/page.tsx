@@ -89,7 +89,7 @@ export default async function DashboardPage() {
                         {(event.customers as any)?.full_name || 'Desconhecido'}
                       </TableCell>
                       <TableCell>
-                        {format(new Date(event.event_date), 'dd/MM/yyyy')}
+                        {`${event.event_date.substring(8, 10)}/${event.event_date.substring(5, 7)}/${event.event_date.substring(0, 4)}`}
                       </TableCell>
                       <TableCell className="text-right">
                         {event.guest_count}
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {format(new Date(booking.event_date), 'dd/MM/yyyy')}
+                        {`${booking.event_date.substring(8, 10)}/${booking.event_date.substring(5, 7)}/${booking.event_date.substring(0, 4)}`}
                       </TableCell>
                     </TableRow>
                   ))

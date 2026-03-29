@@ -405,7 +405,7 @@ export function PaymentManagerDialog({
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(payment.installment_value)}
                     </TableCell>
                     <TableCell>
-                      {new Intl.DateTimeFormat('pt-BR').format(new Date(payment.due_date + 'T00:00:00'))}
+                      {payment.due_date.substring(8, 10)}/{payment.due_date.substring(5, 7)}/{payment.due_date.substring(0, 4)}
                     </TableCell>
                     <TableCell>
                       {payment.status === 'pending' && <span className="text-yellow-600 font-medium">Pendente</span>}

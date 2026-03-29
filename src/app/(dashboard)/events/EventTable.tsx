@@ -66,7 +66,7 @@ export function EventTable({
           {events.map((evt) => (
             <TableRow key={evt.id}>
               <TableCell className="font-medium">
-                {format(new Date(evt.event_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}
+                {evt.event_date.substring(8, 10)}/{evt.event_date.substring(5, 7)}/{evt.event_date.substring(0, 4)}
               </TableCell>
               <TableCell>{getCustomerName(evt.customers)}</TableCell>
               <TableCell>

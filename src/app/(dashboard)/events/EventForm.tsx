@@ -43,24 +43,34 @@ export function EventForm({ event, customers, locks, activeEvents = [], onSucces
   const [error, setError] = useState<string | null>(null)
   
   // Try to parse initial date safely for timezone handling
-  const [date, setDate] = useState<Date | undefined>(
-    event?.event_date ? new Date(`${event.event_date}T12:00:00`) : undefined
-  )
-
-  // Map calendar_locks to the DateMatcher format used by react-day-picker
-  const lockDates = locks.map(lock => ({
-    from: new Date(`${lock.start_date}T00:00:00`),
-    to: new Date(`${lock.end_date}T23:59:59`)
-  }))
-
-  const eventDates = activeEvents.map(evt => {
-    // block event specific dates
-    const date = new Date(`${evt.event_date}T12:00:00`)
-    return date
+  const [date, setDate] = useState<Date | undefined>(() => {
+    if (!event?.event_date) return undefined;
+    const [year, month, day] = event.event_date.substring(0, 10).split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    d.setHours(12, 0, 0, 0);
+    return d;
   })
 
-  // Combine both sources of blocked dates
-  const disabledDates = [...lockDates, ...eventDates]
+  const disabledDates = [
+    (d: Date) => {
+      const checkStr = format(d, 'yyyy-MM-dd')
+      
+      for (const lock of locks || []) {
+        const startStr = lock.start_date.substring(0, 10)
+        const endStr = lock.end_date.substring(0, 10)
+        if (checkStr >= startStr && checkStr <= endStr) return true
+      }
+      
+      for (const evt of (activeEvents || [])) {
+        if (evt.event_date) {
+          const evtStr = evt.event_date.substring(0, 10)
+          if (checkStr === evtStr) return true
+        }
+      }
+      
+      return false
+    }
+  ]
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
