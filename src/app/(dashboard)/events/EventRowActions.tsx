@@ -91,6 +91,7 @@ export function EventRowActions({
 
       <PaymentManagerDialog 
         eventId={event.id}
+        eventTotalValue={event.total_value}
         open={paymentsOpen}
         onOpenChange={setPaymentsOpen}
       />

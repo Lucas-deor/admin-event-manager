@@ -43,10 +43,12 @@ type PaymentStatus = Database['public']['Enums']['payment_status']
 
 export function PaymentManagerDialog({
   eventId,
+  eventTotalValue = 0,
   open,
   onOpenChange,
 }: {
   eventId: string
+  eventTotalValue?: number
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -142,12 +144,41 @@ export function PaymentManagerDialog({
     }
   }
 
+  const totalPaid = payments
+    .filter((p) => p.status === 'paid')
+    .reduce((acc, current) => acc + current.installment_value, 0)
+    
+  const remainingValue = Math.max(0, eventTotalValue - totalPaid)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>Gerenciar Pagamentos</DialogTitle>
         </DialogHeader>
+
+        {eventTotalValue > 0 && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-between bg-muted/50 p-4 rounded-lg mb-2 border">
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Valor do Evento</span>
+              <span className="text-lg font-semibold">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(eventTotalValue)}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Total Pago</span>
+              <span className="text-lg font-semibold text-green-600">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPaid)}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Restante a Pagar</span>
+              <span className="text-lg font-semibold text-amber-600">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(remainingValue)}
+              </span>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end mb-6">
           <div className="flex flex-col gap-2">
