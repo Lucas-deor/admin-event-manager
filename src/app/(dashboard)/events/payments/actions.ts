@@ -23,6 +23,14 @@ export async function getPayments(eventId: string) {
 export async function createPayment(data: PaymentInsert) {
   const supabase = await createClient()
   
+  // Preventive check: if inserting as pending but date is past, change to overdue
+  if (data.status === 'pending' && data.due_date) {
+    const today = new Date().toISOString().split('T')[0]
+    if (data.due_date < today) {
+      data.status = 'overdue'
+    }
+  }
+
   const { error } = await supabase
     .from('payments')
     .insert(data)
@@ -37,6 +45,14 @@ export async function createPayment(data: PaymentInsert) {
 export async function updatePayment(id: string, data: PaymentUpdate) {
   const supabase = await createClient()
   
+  // Preventive check: if updating to pending but date is past, change to overdue
+  if (data.status === 'pending' && data.due_date) {
+    const today = new Date().toISOString().split('T')[0]
+    if (data.due_date < today) {
+      data.status = 'overdue'
+    }
+  }
+
   const { error } = await supabase
     .from('payments')
     .update(data)
