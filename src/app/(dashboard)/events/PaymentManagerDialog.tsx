@@ -353,7 +353,15 @@ export function PaymentManagerDialog({
                       onValueChange={(val) => setIntervalUnit(val as 'months' | 'days')}
                     >
                       <SelectTrigger className="flex-1 h-9">
-                        <SelectValue />
+                        <SelectValue placeholder="Selecione...">
+                          {(val: string | null) => {
+                            const unitMap: Record<string, string> = {
+                              days: 'Dias',
+                              months: 'Meses'
+                            };
+                            return val ? unitMap[val] || val : "Selecione...";
+                          }}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="days">Dias</SelectItem>
@@ -364,17 +372,17 @@ export function PaymentManagerDialog({
                 </div>
               </>
             )}
-          </div>
-          
-          <div className="flex justify-end gap-2 w-full mt-2">
-            {editingId && (
-              <Button type="button" variant="outline" onClick={resetForm} disabled={formLoading} className="px-6">
-                Cancelar
+
+            <div className={cn("flex gap-2 w-full h-9", (isBatch && !editingId) ? "lg:col-start-5" : "lg:col-span-1")}>
+              {editingId && (
+                <Button type="button" variant="outline" onClick={resetForm} disabled={formLoading} className="flex-1 h-9">
+                  Cancelar
+                </Button>
+              )}
+              <Button type="submit" disabled={formLoading} className="flex-1 h-9">
+                {editingId ? 'Salvar' : (isBatch ? 'Criar Lote' : 'Adicionar')}
               </Button>
-            )}
-            <Button type="submit" disabled={formLoading} className="px-6">
-              {editingId ? 'Salvar' : (isBatch ? 'Criar Lote' : 'Adicionar')}
-            </Button>
+            </div>
           </div>
         </form>
 

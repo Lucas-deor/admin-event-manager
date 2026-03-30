@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Filter } from 'lucide-react'
+import { Filter, CalendarIcon } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format, parse } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pendente' },
@@ -29,8 +33,14 @@ export function EventFilterModal({
   const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
 
-  const [fromDate, setFromDate] = useState(initialFromDate)
-  const [toDate, setToDate] = useState(initialToDate)
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: initialFromDate ? parse(initialFromDate, 'yyyy-MM-dd', new Date()) : undefined,
+    to: initialToDate ? parse(initialToDate, 'yyyy-MM-dd', new Date()) : undefined,
+  });
+  
   const [statuses, setStatuses] = useState<string[]>(initialStatuses)
 
   const handleStatusChange = (val: string, checked: boolean) => {
@@ -51,10 +61,10 @@ export function EventFilterModal({
     })
 
     // Set dates
-    if (fromDate) params.set('from_date', fromDate)
+    if (dateRange.from) params.set('from_date', format(dateRange.from, 'yyyy-MM-dd'))
     else params.delete('from_date')
 
-    if (toDate) params.set('to_date', toDate)
+    if (dateRange.to) params.set('to_date', format(dateRange.to, 'yyyy-MM-dd'))
     else params.delete('to_date')
 
     params.set('page', '1') // reset pagination if applicable
@@ -64,8 +74,7 @@ export function EventFilterModal({
   }
 
   const handleClear = () => {
-    setFromDate('')
-    setToDate('')
+    setDateRange({ from: undefined, to: undefined })
     setStatuses([])
     
     const params = new URLSearchParams(window.location.search)
@@ -83,7 +92,7 @@ export function EventFilterModal({
       <DialogTrigger className={buttonVariants({ variant: "outline", className: "flex items-center gap-2 cursor-pointer" })}>
         <Filter className="h-4 w-4" />
         Filtros
-        {statuses.length > 0 || fromDate || toDate ? (
+        {statuses.length > 0 || dateRange.from || dateRange.to ? (
           <span className="flex h-2 w-2 rounded-full bg-primary" />
         ) : null}
       </DialogTrigger>
@@ -94,26 +103,49 @@ export function EventFilterModal({
         <div className="grid gap-6 py-4">
           <div className="space-y-4">
             <h4 className="font-medium text-sm">Período</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="from_date">De</Label>
-                <Input
-                  id="from_date"
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="to_date">Até</Label>
-                <Input
-                  id="to_date"
-                  type="date"
-                  min={fromDate}
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                />
-              </div>
+            <div className="grid gap-2">
+              <Popover>
+                <PopoverTrigger
+                    id="date"
+                    className={cn(
+                      "flex w-full items-center justify-start gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 h-9 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                      !dateRange.from && !dateRange.to && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
+                          {format(dateRange.to, "dd/MM/yyyy", { locale: ptBR })}
+                        </>
+                      ) : (
+                        format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })
+                      )
+                    ) : (
+                      <span>Selecione um período</span>
+                    )}
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={{
+                      from: dateRange.from,
+                      to: dateRange.to
+                    }}
+                    onSelect={(range) => {
+                      setDateRange({
+                        from: range?.from,
+                        to: range?.to
+                      })
+                    }}
+                    numberOfMonths={2}
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           
