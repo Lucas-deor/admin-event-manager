@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { buttonVariants } from "@/components/ui/button"
 import { Database } from "@/types/database"
-import { MoreHorizontal, Edit, Trash } from "lucide-react"
+import { MoreHorizontal, Edit, Trash, Eye, DollarSign } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +19,9 @@ import {
 import { EventForm } from './EventForm'
 import { deleteEvent } from './actions'
 import { PaymentManagerDialog } from './PaymentManagerDialog'
-import { DollarSign } from "lucide-react"
+import { EventDetailsDialog } from './EventDetailsDialog'
 
-type EventType = Database['public']['Tables']['events']['Row']
+type EventType = Database['public']['Tables']['events']['Row'] & { customers?: { full_name: string } | ({ full_name: string } | null)[] | null }
 type CustomerType = Database['public']['Tables']['customers']['Row']
 type LockType = Database['public']['Tables']['calendar_locks']['Row']
 
@@ -36,6 +36,7 @@ export function EventRowActions({
 }) {
   const [open, setOpen] = useState(false)
   const [paymentsOpen, setPaymentsOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleDelete() {
@@ -63,6 +64,9 @@ export function EventRowActions({
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
+            <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setPaymentsOpen(true)}>
             <DollarSign className="mr-2 h-4 w-4" /> Pagamentos
           </DropdownMenuItem>
@@ -94,6 +98,12 @@ export function EventRowActions({
         eventTotalValue={event.total_value}
         open={paymentsOpen}
         onOpenChange={setPaymentsOpen}
+      />
+
+      <EventDetailsDialog 
+        event={event as any}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
       />
     </>
   )

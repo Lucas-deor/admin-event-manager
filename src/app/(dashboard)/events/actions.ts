@@ -78,6 +78,7 @@ export async function createEvent(formData: FormData) {
   const status = (formData.get('status') as "pending" | "confirmed" | "finished" | "cancelled") || 'pending'
   const guestCount = parseInt(formData.get('guest_count') as string) || 0
   const totalValue = parseFloat(formData.get('total_value') as string) || 0
+  const description = formData.get('description') as string | null
 
   if (!customerId || !eventDate) {
     throw new Error('Cliente e data são obrigatórios')
@@ -112,7 +113,8 @@ export async function createEvent(formData: FormData) {
       event_date: eventDate,
       status: status,
       guest_count: guestCount,
-      total_value: totalValue
+      total_value: totalValue,
+      description: description || null
     }])
     .select()
     .single()
@@ -134,6 +136,7 @@ export async function updateEvent(id: string, formData: FormData) {
   const status = formData.get('status') as "pending" | "confirmed" | "finished" | "cancelled"
   const guestCount = parseInt(formData.get('guest_count') as string) || 0
   const totalValue = parseFloat(formData.get('total_value') as string) || 0
+  const description = formData.get('description') as string | null
 
   if (!customerId || !eventDate) {
     throw new Error('Cliente e data são obrigatórios')
@@ -169,7 +172,8 @@ export async function updateEvent(id: string, formData: FormData) {
       event_date: eventDate,
       status: status,
       guest_count: guestCount,
-      total_value: totalValue
+      total_value: totalValue,
+      description: description || null
     })
     .eq('id', id)
     .select()

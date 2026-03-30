@@ -60,6 +60,7 @@ export interface Database {
           status: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count: number
           total_value: number
+          description: string | null
           created_at: string
         }
         Insert: {
@@ -69,6 +70,7 @@ export interface Database {
           status?: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count?: number
           total_value: number
+          description?: string | null
           created_at?: string
         }
         Update: {
@@ -78,6 +80,7 @@ export interface Database {
           status?: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count?: number
           total_value?: number
+          description?: string | null
           created_at?: string
         }
       }

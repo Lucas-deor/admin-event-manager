@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -199,6 +200,18 @@ export function EventForm({ event, customers, locks, activeEvents = [], onSucces
             defaultValue={event?.total_value || 0}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Descrição</Label>
+        <Textarea 
+          id="description" 
+          name="description" 
+          placeholder="Detalhes adicionais do evento..."
+          defaultValue={event?.description || ''}
+          rows={4}
+          className="resize-y min-h-[100px] max-h-[300px] overflow-y-auto"
+        />
       </div>
 
       {error && (
