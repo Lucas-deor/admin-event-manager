@@ -89,6 +89,7 @@ export async function fetchAdminCommissions() {
       )
     `)
     .not('admin_id', 'is', null)
+    .neq('status', 'cancelled')
 
   if (error) {
     console.error('Error fetching admin events:', error)

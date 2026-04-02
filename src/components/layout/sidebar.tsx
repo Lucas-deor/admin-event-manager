@@ -21,7 +21,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col border-r border-stone-200 bg-stone-50">
       <div className="flex h-16 shrink-0 items-center px-6">
-        <h1 className="text-xl font-semibold text-stone-800">Recanto Apoena</h1>
+        <h1 className="text-xl font-semibold text-stone-800">Fazenda Apoena</h1>
       </div>
       
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
