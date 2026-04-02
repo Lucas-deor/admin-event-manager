@@ -13,16 +13,19 @@ export interface Database {
         Row: {
           id: string
           email: string
+          name: string | null
           created_at: string
         }
         Insert: {
           id?: string
           email: string
+          name?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           email?: string
+          name?: string | null
           created_at?: string
         }
       }
@@ -56,6 +59,8 @@ export interface Database {
         Row: {
           id: string
           customer_id: string
+          admin_id: string | null
+          commission_percentage: number | null
           event_date: string
           status: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count: number
@@ -66,6 +71,8 @@ export interface Database {
         Insert: {
           id?: string
           customer_id: string
+          admin_id?: string | null
+          commission_percentage?: number | null
           event_date: string
           status?: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count?: number
@@ -76,6 +83,8 @@ export interface Database {
         Update: {
           id?: string
           customer_id?: string
+          admin_id?: string | null
+          commission_percentage?: number | null
           event_date?: string
           status?: 'pending' | 'confirmed' | 'finished' | 'cancelled'
           guest_count?: number

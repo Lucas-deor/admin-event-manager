@@ -34,7 +34,17 @@ export function AdminForm() {
       <CardContent>
         <form id="admin-form" action={onSubmit} className="space-y-4 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:space-y-0">
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="email">E-mail do administrador</Label>
+            <Label htmlFor="name">Nome</Label>
+            <Input 
+              type="text" 
+              name="name" 
+              id="name" 
+              placeholder="Nome do administrador" 
+              required 
+            />
+          </div>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="email">E-mail</Label>
             <Input 
               type="email" 
               name="email" 
@@ -44,7 +54,7 @@ export function AdminForm() {
             />
           </div>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Adicionando...' : 'Adicionar Administrador'}
+            {loading ? 'Adicionando...' : 'Adicionar'}
           </Button>
         </form>
       </CardContent>

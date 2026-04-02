@@ -12,9 +12,13 @@ const supabaseAdmin = createAdminClient(
 
 export async function addAdmin(formData: FormData) {
   const email = formData.get('email') as string;
+  const name = formData.get('name') as string;
 
   if (!email) {
     return { error: 'E-mail é obrigatório' };
+  }
+  if (!name) {
+    return { error: 'Nome é obrigatório' };
   }
 
   const supabase = await createClient();
@@ -22,7 +26,7 @@ export async function addAdmin(formData: FormData) {
   // 1. Inserir na tabela de admins
   const { error } = await supabase
     .from('admin_users')
-    .insert({ email });
+    .insert({ email, name });
 
   if (error) {
     if (error.code === '23505') {

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { Suspense } from 'react'
-import { getEvents, getAllActiveEvents } from './actions'
+import { getEvents, getAllActiveEvents, getAdmins } from './actions'
 import { getCustomers } from '../customers/actions'
 import { getCalendarLocks } from '../calendar/actions'
 import { EventTable } from './EventTable'
@@ -32,12 +32,13 @@ async function EventList({
   const { events, count } = await getEvents({ search, status, fromDate, toDate, sort, order, page, limit: 10 })
   const { customers } = await getCustomers()
   const locks = await getCalendarLocks()
+  const admins = await getAdmins()
 
   const totalPages = Math.ceil(count / 10)
 
   return (
     <>
-      <EventTable events={events} customers={customers} locks={locks} />
+      <EventTable events={events} customers={customers} locks={locks} admins={admins} />
       <EventPagination totalPages={totalPages} currentPage={page} />
     </>
   )
@@ -68,6 +69,7 @@ export default async function EventsPage({
   const { customers } = await getCustomers()
   const locks = await getCalendarLocks()
   const activeEvents = await getAllActiveEvents()
+  const admins = await getAdmins()
 
   // Generate a key representing the current query state so Suspense retriggers
   const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order].join('-')
@@ -91,7 +93,7 @@ export default async function EventsPage({
             />
           </div>
         </div>
-        <EventDialog customers={customers} locks={locks} activeEvents={activeEvents} />
+        <EventDialog customers={customers} locks={locks} activeEvents={activeEvents} admins={admins} />
       </div>
 
       <Suspense key={suspenseKey} fallback={<EventTableSkeleton />}>

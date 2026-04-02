@@ -24,15 +24,18 @@ import { EventDetailsDialog } from './EventDetailsDialog'
 type EventType = Database['public']['Tables']['events']['Row'] & { customers?: { full_name: string } | ({ full_name: string } | null)[] | null }
 type CustomerType = Database['public']['Tables']['customers']['Row']
 type LockType = Database['public']['Tables']['calendar_locks']['Row']
+type AdminType = Database['public']['Tables']['admin_users']['Row']
 
 export function EventRowActions({ 
   event, 
   customers,
-  locks
+  locks,
+  admins = []
 }: { 
   event: EventType, 
   customers: CustomerType[],
-  locks: LockType[]
+  locks: LockType[],
+  admins?: AdminType[]
 }) {
   const [open, setOpen] = useState(false)
   const [paymentsOpen, setPaymentsOpen] = useState(false)
@@ -88,6 +91,7 @@ export function EventRowActions({
             event={event} 
             customers={customers}
             locks={locks}
+            admins={admins}
             onSuccess={() => setOpen(false)} 
           />
         </DialogContent>

@@ -14,7 +14,7 @@ import { removeAdmin } from './actions';
 import { useState } from 'react';
 
 type AdminTableProps = {
-  users: Array<{ id: string; email: string; created_at: string }>;
+  users: Array<{ id: string; name: string | null; email: string; created_at: string }>;
   currentUserEmail: string | undefined;
 };
 
@@ -40,6 +40,7 @@ export function AdminTable({ users, currentUserEmail }: AdminTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Nome</TableHead>
             <TableHead>E-mail</TableHead>
             <TableHead>Adicionado em</TableHead>
             <TableHead className="w-[100px]">Ações</TableHead>
@@ -51,6 +52,9 @@ export function AdminTable({ users, currentUserEmail }: AdminTableProps) {
             
             return (
               <TableRow key={admin.id}>
+                <TableCell className="font-medium">
+                  {admin.name || 'Sem nome'}
+                </TableCell>
                 <TableCell className="font-medium">
                   {admin.email}
                   {isCurrentUser && (

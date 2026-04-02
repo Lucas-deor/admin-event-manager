@@ -74,6 +74,22 @@ export function EventDetailsDialog({ event, open, onOpenChange }: EventDetailsDi
                 }).format(event.total_value)}
               </p>
             </div>
+            {event.admin_id && event.admin_users && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Comissão ({event.commission_percentage}%)
+                </p>
+                <p className="font-medium text-green-600">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format((event.total_value * (event.commission_percentage || 0)) / 100)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Resp: {event.admin_users.name || event.admin_users.email}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>

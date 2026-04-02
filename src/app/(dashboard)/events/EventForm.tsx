@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils"
 type EventType = Database['public']['Tables']['events']['Row']
 type CustomerType = Database['public']['Tables']['customers']['Row']
 type LockType = Database['public']['Tables']['calendar_locks']['Row']
+type AdminType = Database['public']['Tables']['admin_users']['Row']
 type ActiveEventType = { event_date: string, status: string }
 
 interface EventFormProps {
@@ -36,12 +37,15 @@ interface EventFormProps {
   customers: CustomerType[]
   locks: LockType[]
   activeEvents?: ActiveEventType[]
+  admins?: AdminType[]
   onSuccess: () => void
 }
 
-export function EventForm({ event, customers, locks, activeEvents = [], onSuccess }: EventFormProps) {
+export function EventForm({ event, customers, locks, activeEvents = [], admins = [], onSuccess }: EventFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [enableCommission, setEnableCommission] = useState(!!event?.admin_id)
+
   
   // Try to parse initial date safely for timezone handling
   const [date, setDate] = useState<Date | undefined>(() => {
@@ -200,6 +204,52 @@ export function EventForm({ event, customers, locks, activeEvents = [], onSucces
             defaultValue={event?.total_value || 0}
           />
         </div>
+      </div>
+
+      <div className="p-4 border rounded-md bg-slate-50 space-y-4">
+        <label className="flex items-center gap-2 cursor-pointer font-medium text-sm">
+          <input 
+            type="checkbox" 
+            checked={enableCommission}
+            onChange={(e) => setEnableCommission(e.target.checked)}
+            className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+          />
+          Atribuir comissão
+        </label>
+
+        {enableCommission && (
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="admin_id">Responsável</Label>
+              <Select name="admin_id" defaultValue={event?.admin_id || undefined} required={enableCommission}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione um administrador">
+                    {(val: string | null) => val ? admins?.find(a => a.id === val)?.name || admins?.find(a => a.id === val)?.email || val : "Selecione um responsável"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {admins?.map(a => (
+                    <SelectItem key={a.id} value={a.id}>{a.name || a.email}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="commission_percentage">Comissão (%)</Label>
+              <Input 
+                id="commission_percentage" 
+                name="commission_percentage" 
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                defaultValue={event?.commission_percentage ?? 5}
+                required={enableCommission}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

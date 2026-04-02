@@ -2,7 +2,21 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+export async function getAdmins() {
+  const supabase = await createClient()
 
+  const { data, error } = await supabase
+    .from('admin_users')
+    .select('*')
+    .order('name')
+
+  if (error) {
+    console.error('Error fetching admins:', error)
+    return []
+  }
+
+  return data
+}
 export async function getEvents({
   search,
   status,
@@ -30,7 +44,8 @@ export async function getEvents({
     .from('events')
     .select(`
       *,
-      customers!inner ( full_name )
+      customers!inner ( full_name ),
+      admin_users ( name )
     `, { count: 'exact' })
 
   if (search) {
@@ -80,6 +95,15 @@ export async function createEvent(formData: FormData) {
   const totalValue = parseFloat(formData.get('total_value') as string) || 0
   const description = formData.get('description') as string | null
 
+  let adminId = formData.get('admin_id') as string | null
+  let commissionPercentageStr = formData.get('commission_percentage') as string | null
+  
+  if (!adminId) {
+    adminId = null
+    commissionPercentageStr = null
+  }
+  const commissionPercentage = commissionPercentageStr ? parseFloat(commissionPercentageStr) : null
+
   if (!customerId || !eventDate) {
     throw new Error('Cliente e data são obrigatórios')
   }
@@ -110,6 +134,8 @@ export async function createEvent(formData: FormData) {
     .from('events')
     .insert([{
       customer_id: customerId,
+      admin_id: adminId,
+      commission_percentage: commissionPercentage,
       event_date: eventDate,
       status: status,
       guest_count: guestCount,
@@ -137,6 +163,15 @@ export async function updateEvent(id: string, formData: FormData) {
   const guestCount = parseInt(formData.get('guest_count') as string) || 0
   const totalValue = parseFloat(formData.get('total_value') as string) || 0
   const description = formData.get('description') as string | null
+
+  let adminId = formData.get('admin_id') as string | null
+  let commissionPercentageStr = formData.get('commission_percentage') as string | null
+  
+  if (!adminId) {
+    adminId = null
+    commissionPercentageStr = null
+  }
+  const commissionPercentage = commissionPercentageStr ? parseFloat(commissionPercentageStr) : null
 
   if (!customerId || !eventDate) {
     throw new Error('Cliente e data são obrigatórios')
@@ -169,6 +204,8 @@ export async function updateEvent(id: string, formData: FormData) {
     .from('events')
     .update({
       customer_id: customerId,
+      admin_id: adminId,
+      commission_percentage: commissionPercentage,
       event_date: eventDate,
       status: status,
       guest_count: guestCount,
