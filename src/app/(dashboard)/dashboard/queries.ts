@@ -72,3 +72,58 @@ export async function fetchRecentBookings(limit = 5) {
 
   return data || []
 }
+
+export async function fetchAdminCommissions() {
+  const supabase = await createClient()
+
+  const { data: events, error } = await supabase
+    .from('events')
+    .select(`
+      admin_id,
+      total_value,
+      commission_percentage,
+      admin_users:admin_id (
+        id,
+        name,
+        email
+      )
+    `)
+    .not('admin_id', 'is', null)
+
+  if (error) {
+    console.error('Error fetching admin events:', error)
+    return []
+  }
+
+  const commissionsMap = new Map<string, {
+    adminId: string;
+    adminName: string | null;
+    adminEmail: string | null;
+    totalCommission: number;
+    eventCount: number;
+  }>()
+
+  for (const event of events || []) {
+    if (!event.admin_id || typeof event.commission_percentage !== 'number') continue
+
+    const adminInfo = Array.isArray(event.admin_users) ? event.admin_users[0] : event.admin_users;
+    const commissionValue = (event.total_value * (event.commission_percentage || 0)) / 100
+
+    if (!commissionsMap.has(event.admin_id)) {
+      commissionsMap.set(event.admin_id, {
+        adminId: event.admin_id,
+        adminName: adminInfo?.name || null,
+        adminEmail: adminInfo?.email || null,
+        totalCommission: 0,
+        eventCount: 0
+      })
+    }
+
+    const currentStats = commissionsMap.get(event.admin_id)!
+    currentStats.totalCommission += commissionValue
+    currentStats.eventCount += 1
+  }
+
+  return Array.from(commissionsMap.values())
+    .sort((a, b) => b.totalCommission - a.totalCommission)
+}

@@ -207,15 +207,26 @@ export function EventForm({ event, customers, locks, activeEvents = [], admins =
       </div>
 
       <div className="p-4 border rounded-md bg-slate-50 space-y-4">
-        <label className="flex items-center gap-2 cursor-pointer font-medium text-sm">
-          <input 
-            type="checkbox" 
-            checked={enableCommission}
-            onChange={(e) => setEnableCommission(e.target.checked)}
-            className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
-          />
-          Atribuir comissão
-        </label>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={enableCommission}
+            onClick={() => setEnableCommission(!enableCommission)}
+            className={cn(
+              "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+              enableCommission ? "bg-slate-900" : "bg-slate-200"
+            )}
+          >
+            <span
+              className={cn(
+                "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform",
+                enableCommission ? "translate-x-5" : "translate-x-0"
+              )}
+            />
+          </button>
+          <span className="font-medium text-sm">Atribuir comissão</span>
+        </div>
 
         {enableCommission && (
           <div className="grid grid-cols-2 gap-4 pt-2">
