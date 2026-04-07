@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,8 +15,9 @@ import {
 } from "@/components/ui/select"
 import { Database } from "@/types/database"
 import { createEvent, updateEvent } from './actions'
+import { getCustomers } from '../customers/actions'
 
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
 import { format, isWithinInterval } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Calendar } from "@/components/ui/calendar"
@@ -24,6 +26,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 
 type EventType = Database['public']['Tables']['events']['Row']
@@ -45,6 +55,32 @@ export function EventForm({ event, customers, locks, activeEvents = [], admins =
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [enableCommission, setEnableCommission] = useState(!!event?.admin_id)
+
+  const [openCustomer, setOpenCustomer] = useState(false)
+  const [customerSearch, setCustomerSearch] = useState("")
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false)
+  const [filteredCustomers, setFilteredCustomers] = useState<CustomerType[]>(customers)
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(event?.customer_id || "")
+
+  React.useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (customerSearch) {
+        setIsSearchingCustomer(true)
+        try {
+          const { customers: result } = await getCustomers({ search: customerSearch, limit: 10 })
+          setFilteredCustomers(result)
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setIsSearchingCustomer(false)
+        }
+      } else {
+        setFilteredCustomers(customers)
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [customerSearch, customers])
 
   
   // Try to parse initial date safely for timezone handling
@@ -89,6 +125,12 @@ export function EventForm({ event, customers, locks, activeEvents = [], admins =
       setLoading(false)
       return
     }
+    
+    if (!selectedCustomerId) {
+      setError("É obrigatório selecionar um cliente.")
+      setLoading(false)
+      return
+    }
 
     try {
       if (event) {
@@ -110,20 +152,57 @@ export function EventForm({ event, customers, locks, activeEvents = [], admins =
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-2 flex flex-col">
         <Label htmlFor="customer_id">Cliente *</Label>
-        <Select name="customer_id" defaultValue={event?.customer_id} required>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecione um cliente">
-              {(val: string | null) => val ? customers.find(c => c.id === val)?.full_name || val : "Selecione um cliente"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {customers.map(c => (
-              <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover open={openCustomer} onOpenChange={setOpenCustomer}>
+          <PopoverTrigger 
+            role="combobox"
+            aria-expanded={openCustomer}
+            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="truncate">
+              {selectedCustomerId
+                ? (filteredCustomers.find((c) => c.id === selectedCustomerId)?.full_name || 
+                   customers.find((c) => c.id === selectedCustomerId)?.full_name || 
+                   "Cliente selecionado")
+                : "Selecione um cliente"}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </PopoverTrigger>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+            <Command shouldFilter={false}>
+              <CommandInput 
+                placeholder="Buscar cliente..." 
+                value={customerSearch}
+                onValueChange={setCustomerSearch}
+              />
+              <CommandList>
+                <CommandEmpty>{isSearchingCustomer ? 'Buscando...' : 'Nenhum cliente encontrado.'}</CommandEmpty>
+                <CommandGroup>
+                  {filteredCustomers.map((customer) => (
+                    <CommandItem
+                      key={customer.id}
+                      value={customer.id}
+                      onSelect={(currentValue) => {
+                        setSelectedCustomerId(currentValue === selectedCustomerId ? "" : currentValue)
+                        setOpenCustomer(false)
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {customer.full_name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <input type="hidden" name="customer_id" value={selectedCustomerId} required />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

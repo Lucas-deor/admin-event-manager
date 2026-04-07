@@ -40,7 +40,7 @@ export default async function CustomersPage({
   const suspenseKey = `${search}-${page}-${sort}-${order}`
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
+    <div className="flex flex-col gap-4 md:gap-6 p-4 md:p-6 max-w-6xl mx-auto w-full">
       <div className="flex justify-between items-end gap-4">
         <div className="flex-1 space-y-4">
           <div>

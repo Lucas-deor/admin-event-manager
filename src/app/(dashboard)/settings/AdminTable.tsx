@@ -36,7 +36,7 @@ export function AdminTable({ users, currentUserEmail }: AdminTableProps) {
   }
 
   return (
-    <div className="rounded-md border mt-8">
+    <div className="rounded-md border mt-8 overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

@@ -75,7 +75,7 @@ export default async function EventsPage({
   const suspenseKey = [search, status?.join(','), fromDate, toDate, sort, order].join('-')
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto w-full">
+    <div className="flex flex-col gap-4 md:gap-6 p-4 md:p-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b pb-4">
         <div className="flex-1 space-y-4 w-full">
           <div>

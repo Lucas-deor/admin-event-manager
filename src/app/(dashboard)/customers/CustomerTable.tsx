@@ -24,7 +24,7 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
   }
 
   return (
-    <div className="border rounded-md">
+    <div className="border rounded-md overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
