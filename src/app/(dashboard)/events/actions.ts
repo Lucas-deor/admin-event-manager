@@ -241,6 +241,38 @@ export async function deleteEvent(id: string) {
   revalidatePath('/events')
   return true
 }
+
+export async function getEventsByMonth(month: string) {
+  const supabase = await createClient()
+
+  if (!/^\d{4}-\d{2}$/.test(month)) {
+    throw new Error('Mês inválido. Use o formato YYYY-MM')
+  }
+
+  const [year, monthNumber] = month.split('-').map(Number)
+  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
+  const fromDate = `${month}-01`
+  const toDate = `${month}-${String(lastDay).padStart(2, '0')}`
+
+  const { data, error } = await supabase
+    .from('events')
+    .select(`
+      *,
+      customers!inner ( full_name ),
+      admin_users ( name, email )
+    `)
+    .gte('event_date', fromDate)
+    .lte('event_date', toDate)
+    .order('event_date', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching monthly events:', error)
+    throw new Error('Não foi possível carregar os eventos do mês')
+  }
+
+  return data
+}
+
 export async function getAllActiveEvents() {
   const supabase = await createClient()
   const { data, error } = await supabase.from('events').select('event_date, status').neq('status', 'cancelled')

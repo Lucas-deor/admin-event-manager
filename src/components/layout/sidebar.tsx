@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, CalendarOff, Home, Users, Settings, LogOut } from 'lucide-react'
+import { Calendar, CalendarDays, CalendarOff, Home, Users, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/app/(dashboard)/dashboard/actions/auth'
@@ -10,6 +10,7 @@ import { signOut } from '@/app/(dashboard)/dashboard/actions/auth'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Eventos', href: '/events', icon: Calendar },
+  { name: 'Agenda', href: '/agenda', icon: CalendarDays },
   { name: 'Clientes', href: '/customers', icon: Users },
   { name: 'Bloqueios', href: '/calendar', icon: CalendarOff },
   { name: 'Configurações', href: '/settings', icon: Settings },
@@ -42,7 +43,7 @@ export function Sidebar({ className }: { className?: string }) {
                 <item.icon
                   className={cn(
                     isActive ? 'text-stone-900' : 'text-stone-400 group-hover:text-stone-900',
-                    'mr-3 h-5 w-5 flex-shrink-0'
+                    'mr-3 h-5 w-5 shrink-0'
                   )}
                   aria-hidden="true"
                 />
