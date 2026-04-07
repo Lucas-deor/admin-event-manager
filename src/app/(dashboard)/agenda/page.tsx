@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { getEventsByMonth } from '../events/actions'
 import { getCalendarLocks } from '../calendar/actions'
 import { AgendaCalendar } from './AgendaCalendar'
+import { AvailabilityCheckerDialog } from './AvailabilityCheckerDialog'
 
 export default async function AgendaPage({
   searchParams,
@@ -21,14 +22,20 @@ export default async function AgendaPage({
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 p-4 md:p-6">
-      <div className="space-y-1 border-b pb-4">
-        <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
-        <p className="text-muted-foreground">
-          Calendário mensal com todos os eventos.
-        </p>
+      <div className="flex items-start justify-between gap-4 border-b pb-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
+          <p className="text-muted-foreground">
+            Calendário mensal com todos os eventos.
+          </p>
+        </div>
+
+        <AvailabilityCheckerDialog />
       </div>
 
-      <AgendaCalendar month={month} events={events} locks={locks} />
+      <div className="hidden md:block">
+        <AgendaCalendar month={month} events={events} locks={locks} />
+      </div>
     </div>
   )
 }

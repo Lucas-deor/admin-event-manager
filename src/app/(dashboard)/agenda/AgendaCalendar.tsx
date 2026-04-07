@@ -5,7 +5,6 @@ import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameMont
 import { ptBR } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { EventDetailsDialog } from '../events/EventDetailsDialog'
@@ -21,11 +20,11 @@ type AgendaEvent = Database['public']['Tables']['events']['Row'] & {
 
 const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: 'Pendente', variant: 'secondary' },
-  confirmed: { label: 'Confirmado', variant: 'default' },
-  finished: { label: 'Concluído', variant: 'outline' },
-  cancelled: { label: 'Cancelado', variant: 'destructive' },
+const statusMap: Record<string, { label: string; className: string }> = {
+  pending: { label: 'Pendente', className: 'text-yellow-600' },
+  confirmed: { label: 'Confirmado', className: 'text-blue-600' },
+  finished: { label: 'Concluído', className: 'text-green-600' },
+  cancelled: { label: 'Cancelado', className: 'text-red-600' },
 }
 
 function getCustomerName(customer: DbCustomer | DbCustomer[]) {
@@ -183,7 +182,7 @@ export function AgendaCalendar({
                   {visibleEvents.map((event) => {
                     const statusInfo = statusMap[event.status] || {
                       label: event.status,
-                      variant: 'secondary' as const,
+                      className: 'text-muted-foreground',
                     }
 
                     return (
@@ -203,9 +202,9 @@ export function AgendaCalendar({
                               currency: 'BRL',
                             })}
                           </span>
-                          <Badge variant={statusInfo.variant} className="text-[10px] md:text-xs">
+                          <span className={`text-[10px] font-medium md:text-xs ${statusInfo.className}`}>
                             {statusInfo.label}
-                          </Badge>
+                          </span>
                         </div>
                       </button>
                     )
@@ -245,7 +244,7 @@ export function AgendaCalendar({
             {selectedDayEvents.map((event) => {
               const statusInfo = statusMap[event.status] || {
                 label: event.status,
-                variant: 'secondary' as const,
+                className: 'text-muted-foreground',
               }
 
               return (
@@ -268,7 +267,7 @@ export function AgendaCalendar({
                         currency: 'BRL',
                       })}
                     </span>
-                    <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                    <span className={`text-xs font-medium ${statusInfo.className}`}>{statusInfo.label}</span>
                   </div>
                 </button>
               )
