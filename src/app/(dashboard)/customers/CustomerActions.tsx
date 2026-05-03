@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { buttonVariants } from "@/components/ui/button"
 import { Database } from "@/types/database"
-import { MoreHorizontal, Edit, Trash } from "lucide-react"
+import { MoreHorizontal, Edit, Trash, List } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ type Customer = Database['public']['Tables']['customers']['Row']
 export function CustomerActions({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   async function handleDelete() {
     if (confirm('Tem certeza que deseja excluir este cliente?')) {
@@ -50,6 +52,9 @@ export function CustomerActions({ customer }: { customer: Customer }) {
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/events?search=${encodeURIComponent(customer.full_name)}`)}>
+            <List className="mr-2 h-4 w-4" /> Eventos
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
             <Edit className="mr-2 h-4 w-4" /> Editar
           </DropdownMenuItem>
