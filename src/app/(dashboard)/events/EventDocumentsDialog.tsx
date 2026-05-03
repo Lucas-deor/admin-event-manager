@@ -18,6 +18,7 @@ export function EventDocumentsDialog({ eventId, open, onOpenChange }: { eventId:
   const [docs, setDocs] = useState<Doc[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -49,6 +50,7 @@ export function EventDocumentsDialog({ eventId, open, onOpenChange }: { eventId:
       await fetchList()
       const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement
       if (fileInput) fileInput.value = ''
+      setSelectedFile(null)
     } catch (err: any) {
       alert(err?.message || 'Erro ao enviar arquivo')
     } finally {
@@ -89,15 +91,33 @@ export function EventDocumentsDialog({ eventId, open, onOpenChange }: { eventId:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Documentos do Evento</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleUpload} className="mb-4">
-          <input name="file" type="file" accept=".pdf,.doc,.docx,.txt,.csv" />
-          <div className="mt-2">
-            <Button type="submit" disabled={uploading}>
+          <div className="relative border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:bg-muted/50 transition-colors cursor-pointer flex flex-col items-center justify-center">
+            <input 
+              name="file" 
+              type="file" 
+              accept=".pdf,.doc,.docx,.txt,.csv" 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            />
+            <div className="text-sm font-medium">
+              {selectedFile ? (
+                <span className="text-primary">{selectedFile.name}</span>
+              ) : (
+                <span>Clique para procurar um arquivo</span>
+              )}
+            </div>
+            {!selectedFile && (
+              <p className="text-xs text-muted-foreground mt-1 text-center">Formatos suportados: .pdf, .doc, .docx, .txt, .csv</p>
+            )}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" disabled={uploading || !selectedFile}>
               {uploading ? 'Enviando...' : 'Anexar documento'}
             </Button>
           </div>
@@ -111,12 +131,12 @@ export function EventDocumentsDialog({ eventId, open, onOpenChange }: { eventId:
           ) : (
             <ul className="space-y-2">
               {docs.map((d) => (
-                <li key={d.id} className="flex items-center justify-between gap-2">
-                  <div className="truncate">
-                    <div className="font-medium">{d.file_name}</div>
-                    <div className="text-sm text-muted-foreground">{(d.size / 1024).toFixed(1)} KB • {new Date(d.created_at).toLocaleString()}</div>
+                <li key={d.id} className="flex items-center justify-between gap-2 overflow-hidden">
+                  <div className="truncate shrink">
+                    <div className="font-medium truncate">{d.file_name}</div>
+                    <div className="text-sm text-muted-foreground">{(d.size / 1024).toFixed(1)} KB • {new Date(d.created_at).toLocaleDateString('pt-BR')}</div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <Button variant="outline" size="sm" onClick={() => handleView(d.path)}>Visualizar</Button>
                     <Button variant="outline" size="sm" onClick={() => {
                       const input = document.createElement('input')
