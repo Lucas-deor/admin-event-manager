@@ -93,6 +93,37 @@ export interface Database {
           created_at?: string
         }
       }
+      event_documents: {
+        Row: {
+          id: string
+          event_id: string
+          file_name: string
+          content_type: string
+          size: number
+          path: string
+          uploaded_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          file_name: string
+          content_type: string
+          size: number
+          path: string
+          uploaded_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          file_name?: string
+          content_type?: string
+          size?: number
+          path?: string
+          created_at?: string
+        }
+      }
       payments: {
         Row: {
           id: string

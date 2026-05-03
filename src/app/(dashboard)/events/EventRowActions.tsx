@@ -20,6 +20,7 @@ import { EventForm } from './EventForm'
 import { deleteEvent } from './actions'
 import { PaymentManagerDialog } from './PaymentManagerDialog'
 import { EventDetailsDialog } from './EventDetailsDialog'
+import EventDocumentsDialog from './EventDocumentsDialog'
 
 type EventType = Database['public']['Tables']['events']['Row'] & { customers?: { full_name: string } | ({ full_name: string } | null)[] | null }
 type CustomerType = Database['public']['Tables']['customers']['Row']
@@ -40,6 +41,7 @@ export function EventRowActions({
   const [open, setOpen] = useState(false)
   const [paymentsOpen, setPaymentsOpen] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [documentsOpen, setDocumentsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleDelete() {
@@ -69,6 +71,9 @@ export function EventRowActions({
         <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
             <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setDocumentsOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" /> Documentos
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setPaymentsOpen(true)}>
             <DollarSign className="mr-2 h-4 w-4" /> Pagamentos
@@ -108,6 +113,12 @@ export function EventRowActions({
         event={event as any}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+      />
+
+      <EventDocumentsDialog
+        eventId={event.id}
+        open={documentsOpen}
+        onOpenChange={setDocumentsOpen}
       />
     </>
   )
